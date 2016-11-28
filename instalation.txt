@@ -1,0 +1,16 @@
+Author: evilnapsis
+Proyecto: supportix
+Fecha de Lanzamiento: 2016-11-27
+
+Hola como estas, gracias por la compra o descarga de este paquete, a continuacion te escribo las instrucciones de instalacion:
+
+1.- Copiar y descomprimir el archivo en la carpeta c:\xampp\htdocs, al final tendras una carpeta llamada “supportix”, a la cual accederas desde el navegador como -> http://127.0.0.1/supportix
+2.- Buscar el archivo schema.sql en supportix/schema.sql, una vez localizado copiar y pegar el contenido en una ventana de MySQL, PHPMyAdmin o MySQL WorkBench
+3.- En caso de ser necesario modificar el archivo C:\xampp\htdocs\supportix\core\controller\Database.php para los datos asociados al acceso a la base de datos.
+
+Login : http://localhost/supportix/
+Usuario: admin
+Password: admin
+
+Dudas y sugerencias a mi direccion email evilnapsis@gmail.com
+Powered By http://evilnapsis.com
