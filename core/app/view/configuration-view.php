@@ -1,37 +1,36 @@
-<br><br><br><br><div class="row">
-	<div class="col-md-3">
-
-	</div>
+<?php 
+// si el usuario no esta logeado
+if(!isset($_SESSION["user_id"])){ Core::redir("./");}
+$user= UserData::getById($_SESSION["user_id"]);
+// si el id  del usuario no existe.
+if($user==null){ Core::redir("./");}
+?>
+<?php if(isset($_GET["opt"]) && $_GET["opt"]=="all"):?>
+<section class="">
+<div class="row">
+	<div class="col-md-3"></div>
 	<div class="col-md-6">
-	<h2>Cambiar Contraseña</h2>
-<br>	<form class="form-horizontal" id="changepasswd" method="post" action="index.php?view=changepasswd" role="form">
-  <div class="form-group">
-    <label for="inputEmail1" class="col-lg-4 control-label">Contraseña Actual</label>
-    <div class="col-lg-8">
+<div class="card">
+  <div class="card-header bg-warning text-white"><i class="bi-key"></i> Cambiar Contraseña</div>
+  <div class="card-body">
+	<form class="form-horizontal" id="changepasswd" method="post" action="index.php?action=configuration&opt=changepasswd" role="form">
+  <div class="form-group mb-3">
+    <label class="form-label">Contraseña Actual</label>
       <input type="password" class="form-control" id="password" name="password" placeholder="Contraseña Actual">
-    </div>
   </div>
 
-  <div class="form-group">
-    <label for="inputPassword1" class="col-lg-4 control-label">Nueva Contraseña</label>
-    <div class="col-lg-8">
+  <div class="form-group mb-3">
+    <label class="form-label">Nueva Contraseña</label>
       <input type="password" class="form-control"  id="newpassword" name="newpassword" placeholder="Nueva Contraseña">
-    </div>
   </div>
 
-  <div class="form-group">
-    <label for="inputPassword1" class="col-lg-4 control-label">Confirmar Nueva Contraseña</label>
-    <div class="col-lg-8">
+  <div class="form-group mb-3">
+    <label class="form-label">Confirmar Nueva Contraseña</label>
       <input type="password" class="form-control" id="confirmnewpassword" name="confirmnewpassword" placeholder="Confirmar Nueva Contraseña">
-    </div>
   </div>
 
-
-
-  <div class="form-group">
-    <div class="col-lg-offset-4 col-lg-8">
-      <button type="submit" class="btn btn-success ">Cambiar Contraseña</button>
-    </div>
+  <div class="d-grid gap-2">
+      <button type="submit" class="btn btn-success">Cambiar Contraseña</button>
   </div>
 </form>
 
@@ -52,6 +51,9 @@ $("#changepasswd").submit(function(e){
 });
 
 </script>
+</div>
+</div>
 	</div>
 </div>
-<br><br><br><br><br><br><br><br><br>
+</section>
+<?php endif; ?>

@@ -2,12 +2,12 @@
 class CategoryData {
 	public static $tablename = "category";
 
+	public $id;
+	public $name;
+	public $created_at;
 
-	public function CategoryData(){
+	public function __construct(){
 		$this->name = "";
-		$this->lastname = "";
-		$this->email = "";
-		$this->password = "";
 		$this->created_at = "NOW()";
 	}
 
@@ -26,7 +26,6 @@ class CategoryData {
 		Executor::doit($sql);
 	}
 
-// partiendo de que ya tenemos creado un objecto CategoryData previamente utilizamos el contexto
 	public function update(){
 		$sql = "update ".self::$tablename." set name=\"$this->name\" where id=$this->id";
 		Executor::doit($sql);

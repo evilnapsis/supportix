@@ -2,12 +2,12 @@
 class StatusData {
 	public static $tablename = "status";
 
+	public $id;
+	public $name;
+	public $created_at;
 
-	public function StatusData(){
+	public function __construct(){
 		$this->name = "";
-		$this->lastname = "";
-		$this->email = "";
-		$this->password = "";
 		$this->created_at = "NOW()";
 	}
 
@@ -26,7 +26,6 @@ class StatusData {
 		Executor::doit($sql);
 	}
 
-// partiendo de que ya tenemos creado un objecto StatusData previamente utilizamos el contexto
 	public function update(){
 		$sql = "update ".self::$tablename." set name=\"$this->name\" where id=$this->id";
 		Executor::doit($sql);

@@ -1,47 +1,64 @@
+<?php 
+// si el usuario no esta logeado
+if(!isset($_SESSION["user_id"])){ Core::redir("./");}
+$user= UserData::getById($_SESSION["user_id"]);
+// si el id  del usuario no existe.
+if($user==null){ Core::redir("./");}
+?>
 <div class="row">
-						<div class="col-lg-3 col-md-6 col-sm-6">
-							<div class="card card-stats">
-								<div class="card-header" data-background-color="orange">
-									<i class="fa fa-clock-o"></i>
-								</div>
-								<div class="card-content">
-									<p class="category">Pendientes</p>
-									<h3 class="title"><?php echo count(TicketData::getAllPendings());?></h3>
-								</div>
-							</div>
-						</div>
-						<div class="col-lg-3 col-md-6 col-sm-6">
-							<div class="card card-stats">
-								<div class="card-header" data-background-color="green">
-									<i class="fa fa-flask"></i>
-								</div>
-								<div class="card-content">
-									<p class="category">Proyectos</p>
-									<h3 class="title"><?php echo count(ProjectData::getAll());?></h3>
-								</div>
-							</div>
-						</div>
-						<div class="col-lg-3 col-md-6 col-sm-6">
-							<div class="card card-stats">
-								<div class="card-header" data-background-color="red">
-									<i class="fa fa-th-list"></i>
-								</div>
-								<div class="card-content">
-									<p class="category">Categorias</p>
-									<h3 class="title"><?php echo count(CategoryData::getAll());?></h3>
-								</div>
-							</div>
-						</div>
+            <div class="col-sm-6 col-lg-3">
+              <div class="card mb-4 text-white bg-warning">
+                <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+                  <div>
+                    <div class="fs-4 fw-semibold"><?php echo count(TicketData::getAllPendings()); ?></div>
+                    <div>Pendientes</div>
+                  </div>
+                </div>
+                <br>
+              </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <div class="card mb-4 text-white bg-success">
+                <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+                  <div>
+                    <div class="fs-4 fw-semibold"><?php echo count(ProjectData::getAll()); ?></div>
+                    <div>Proyectos</div>
+                  </div>
+                </div>
+                <br>
+              </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <div class="card mb-4 text-white bg-danger">
+                <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+                  <div>
+                    <div class="fs-4 fw-semibold"><?php echo count(CategoryData::getAll()); ?></div>
+                    <div>Categorias</div>
+                  </div>
+                </div>
+                <br>
+              </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <div class="card mb-4 text-white bg-primary">
+                <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+                  <div>
+                    <div class="fs-4 fw-semibold"><?php echo count(UserData::getAll()); ?></div>
+                    <div>Usuarios</div>
+                  </div>
+                </div>
+                <br>
+              </div>
+            </div>
+</div>
 
-						<div class="col-lg-3 col-md-6 col-sm-6">
-							<div class="card card-stats">
-								<div class="card-header" data-background-color="blue">
-									<i class="fa fa-users"></i>
-								</div>
-								<div class="card-content">
-									<p class="category">Usuarios</p>
-									<h3 class="title"><?php echo count(UserData::getAll());?></h3>
-								</div>
-							</div>
-						</div>
-					</div>
+<div class="row">
+  <div class="col-md-12">
+    <div class="card mb-4">
+      <div class="card-header">Bienvenido</div>
+      <div class="card-body">
+        <p>Hola, <?php echo $user->name; ?>. Bienvenido al Sistema Supportix.</p>
+      </div>
+    </div>
+  </div>
+</div>
