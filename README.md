@@ -73,7 +73,7 @@ Supportix es un sistema moderno de Gestión de Tickets de Soporte desarrollado e
    ```
 
 5. **Acceso al Sistema**:
-   Navegar a `http://localhost/supportix2/supportix2/`.
+   Navegar a `http://localhost/supportix/`.
 
 6. **Credenciales por defecto**:
    - **Usuario**: `admin`
