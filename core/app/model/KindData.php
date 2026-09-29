@@ -1,56 +1,53 @@
 <?php
+/**
+ * Modelo para el catálogo de tipos de tickets (Kind) en Supportix.
+ */
 class KindData {
 	public static $tablename = "kind";
 
 	public $id;
 	public $name;
-	public $created_at;
 
 	public function __construct(){
 		$this->name = "";
-		$this->created_at = "NOW()";
+	}
+
+	private static function db(): \PDO {
+		return Database::getPdo();
 	}
 
 	public function add(){
-		$sql = "insert into kind (name) ";
-		$sql .= "value (\"$this->name\")";
-		return Executor::doit($sql);
+		$stmt = self::db()->prepare("INSERT INTO ".self::$tablename." (name) VALUES (:name)");
+		$stmt->execute(['name' => $this->name]);
+		$this->id = (int)self::db()->lastInsertId();
 	}
 
 	public static function delById($id){
-		$sql = "delete from ".self::$tablename." where id=$id";
-		Executor::doit($sql);
+		$stmt = self::db()->prepare("DELETE FROM ".self::$tablename." WHERE id = :id");
+		$stmt->execute(['id' => $id]);
 	}
+
 	public function del(){
-		$sql = "delete from ".self::$tablename." where id=$this->id";
-		Executor::doit($sql);
+		self::delById($this->id);
 	}
 
 	public function update(){
-		$sql = "update ".self::$tablename." set name=\"$this->name\" where id=$this->id";
-		Executor::doit($sql);
+		$stmt = self::db()->prepare("UPDATE ".self::$tablename." SET name = :name WHERE id = :id");
+		$stmt->execute([
+			'name' => $this->name,
+			'id'   => $this->id,
+		]);
 	}
 
 	public static function getById($id){
-		$sql = "select * from ".self::$tablename." where id=$id";
-		$query = Executor::doit($sql);
-		return Model::one($query[0],new KindData());
+		$stmt = self::db()->prepare("SELECT * FROM ".self::$tablename." WHERE id = :id");
+		$stmt->execute(['id' => $id]);
+		$stmt->setFetchMode(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, self::class);
+		return $stmt->fetch() ?: null;
 	}
 
 	public static function getAll(){
-		$sql = "select * from ".self::$tablename;
-		$query = Executor::doit($sql);
-		return Model::many($query[0],new KindData());
-
+		$stmt = self::db()->query("SELECT * FROM ".self::$tablename." ORDER BY id ASC");
+		return $stmt->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, self::class);
 	}
-	
-	public static function getLike($q){
-		$sql = "select * from ".self::$tablename." where name like '%$q%'";
-		$query = Executor::doit($sql);
-		return Model::many($query[0],new KindData());
-	}
-
-
 }
-
-?>

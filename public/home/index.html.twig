@@ -1,0 +1,379 @@
+{% extends "layouts/main.html.twig" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+	<div>
+		<h2 class="fw-bold mb-1">Panel Principal</h2>
+		<p class="text-muted mb-0 small">Bienvenido, {{ curr_user ? curr_user.getFullName() : 'Usuario' }} | Resumen y estadísticas del sistema</p>
+	</div>
+	<div class="d-flex gap-2">
+		<a href="{{ base_url }}/ticket/new" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i> Nuevo Ticket</a>
+	</div>
+</div>
+
+<!-- Tarjetas de Métricas -->
+<div class="row g-3 mb-4">
+	<!-- Card Tickets Pendientes -->
+	<div class="col-6 col-lg-3">
+		<a href="{{ base_url }}/tickets" class="text-decoration-none text-dark">
+			<div class="card shadow-sm border-0 h-100 card-hover" style="border-left: 4px solid #f9b115 !important;">
+				<div class="card-body p-4 d-flex align-items-center justify-content-between">
+					<div>
+						<div class="fs-3 fw-bold text-warning">{{ metrics.pending_tickets }}</div>
+						<div class="text-uppercase fw-bold text-muted small">Tickets Pendientes</div>
+					</div>
+					<div class="text-warning opacity-50">
+						<i class="bi bi-clock-history fs-1"></i>
+					</div>
+				</div>
+			</div>
+		</a>
+	</div>
+	<!-- Card Proyectos -->
+	<div class="col-6 col-lg-3">
+		<a href="{{ base_url }}/projects" class="text-decoration-none text-dark">
+			<div class="card shadow-sm border-0 h-100 card-hover" style="border-left: 4px solid #2eb85c !important;">
+				<div class="card-body p-4 d-flex align-items-center justify-content-between">
+					<div>
+						<div class="fs-3 fw-bold text-success">{{ metrics.total_projects }}</div>
+						<div class="text-uppercase fw-bold text-muted small">Proyectos</div>
+					</div>
+					<div class="text-success opacity-50">
+						<i class="bi bi-folder fs-1"></i>
+					</div>
+				</div>
+			</div>
+		</a>
+	</div>
+	<!-- Card Categorías -->
+	<div class="col-6 col-lg-3">
+		<a href="{{ base_url }}/categories" class="text-decoration-none text-dark">
+			<div class="card shadow-sm border-0 h-100 card-hover" style="border-left: 4px solid #e55353 !important;">
+				<div class="card-body p-4 d-flex align-items-center justify-content-between">
+					<div>
+						<div class="fs-3 fw-bold text-danger">{{ metrics.total_categories }}</div>
+						<div class="text-uppercase fw-bold text-muted small">Categorías</div>
+					</div>
+					<div class="text-danger opacity-50">
+						<i class="bi bi-tags fs-1"></i>
+					</div>
+				</div>
+			</div>
+		</a>
+	</div>
+	<!-- Card Usuarios -->
+	<div class="col-6 col-lg-3">
+		<a href="{{ base_url }}/users" class="text-decoration-none text-dark">
+			<div class="card shadow-sm border-0 h-100 card-hover" style="border-left: 4px solid #321fdb !important;">
+				<div class="card-body p-4 d-flex align-items-center justify-content-between">
+					<div>
+						<div class="fs-3 fw-bold text-primary">{{ metrics.total_users }}</div>
+						<div class="text-uppercase fw-bold text-muted small">Usuarios</div>
+					</div>
+					<div class="text-primary opacity-50">
+						<i class="bi bi-people fs-1"></i>
+					</div>
+				</div>
+			</div>
+		</a>
+	</div>
+</div>
+
+<!-- Gráfica 1: Tickets de los últimos 30 días -->
+<div class="row mb-4">
+	<div class="col-md-12">
+		<div class="card shadow-sm border-0">
+			<div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+				<h5 class="card-title mb-0 fw-bold text-primary">
+					<i class="bi bi-graph-up me-2"></i>Tickets de los Últimos 30 Días
+				</h5>
+				<span class="badge bg-light text-muted border">Tendencia Diaria</span>
+			</div>
+			<div class="card-body">
+				<div style="position: relative; height: 280px; width: 100%;">
+					<canvas id="tickets30DaysChart"></canvas>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Gráficas Secundarias: Por Estado y Por Categoría -->
+<div class="row g-4 mb-4">
+	<!-- Gráfica 2: Tickets por Status -->
+	<div class="col-lg-6">
+		<div class="card shadow-sm border-0 h-100">
+			<div class="card-header bg-white py-3">
+				<h5 class="card-title mb-0 fw-bold text-primary">
+					<i class="bi bi-pie-chart me-2"></i>Tickets por Estado
+				</h5>
+			</div>
+			<div class="card-body d-flex align-items-center justify-content-center">
+				<div style="position: relative; height: 260px; width: 100%;">
+					<canvas id="ticketsByStatusChart"></canvas>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Gráfica 3: Tickets por Categoría -->
+	<div class="col-lg-6">
+		<div class="card shadow-sm border-0 h-100">
+			<div class="card-header bg-white py-3">
+				<h5 class="card-title mb-0 fw-bold text-primary">
+					<i class="bi bi-bar-chart-line me-2"></i>Tickets por Categoría
+				</h5>
+			</div>
+			<div class="card-body">
+				<div style="position: relative; height: 260px; width: 100%;">
+					<canvas id="ticketsByCategoryChart"></canvas>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Tabla: Últimos 10 Tickets más recientes -->
+<div class="row mb-4">
+	<div class="col-md-12">
+		<div class="card shadow-sm border-0">
+			<div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+				<h5 class="card-title mb-0 fw-bold text-primary">
+					<i class="bi bi-ticket-detailed me-2"></i>Últimos 10 Tickets Recientes
+				</h5>
+				<a href="{{ base_url }}/tickets" class="btn btn-outline-primary btn-sm">Ver Todos</a>
+			</div>
+			<div class="card-body p-0">
+				{% if recent_tickets|length > 0 %}
+					<div class="table-responsive">
+						<table class="table table-hover align-middle mb-0 no-datatable">
+							<thead class="table-light">
+								<tr>
+									<th>Asunto</th>
+									<th>Proyecto</th>
+									<th>Categoría</th>
+									<th>Prioridad</th>
+									<th>Estado</th>
+									<th>Fecha</th>
+									<th class="text-end" style="width: 100px;">Acción</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for t in recent_tickets %}
+									{% set prio_name = t.priority ? t.priority.name : 'Normal' %}
+									{% set prio_badge = 'secondary' %}
+									{% if t.priority_id == 1 %}{% set prio_badge = 'danger' %}
+									{% elseif t.priority_id == 2 %}{% set prio_badge = 'warning text-dark' %}
+									{% elseif t.priority_id == 3 %}{% set prio_badge = 'info text-dark' %}
+									{% endif %}
+
+									{% set status_name = t.status ? t.status.name : 'Pendiente' %}
+									{% set status_badge = 'warning text-dark' %}
+									{% if t.status_id == 2 %}{% set status_badge = 'primary' %}
+									{% elseif t.status_id == 3 %}{% set status_badge = 'success' %}
+									{% elseif t.status_id == 4 %}{% set status_badge = 'dark' %}
+									{% endif %}
+
+									<tr>
+										<td>
+											<span class="fw-semibold">{{ t.title }}</span>
+											<span class="badge bg-light text-dark border ms-1">{{ t.kind ? t.kind.name : 'Ticket' }}</span>
+										</td>
+										<td>{{ t.project ? t.project.name : '<span class="text-muted">Sin proyecto</span>'|raw }}</td>
+										<td>{{ t.category ? t.category.name : '<span class="text-muted">-</span>'|raw }}</td>
+										<td><span class="badge bg-{{ prio_badge }}">{{ prio_name }}</span></td>
+										<td><span class="badge bg-{{ status_badge }}">{{ status_name }}</span></td>
+										<td><small class="text-muted">{{ t.created_at }}</small></td>
+										<td class="text-end">
+											<a href="{{ base_url }}/ticket/{{ t.id }}/edit" class="btn btn-warning btn-sm" title="Editar"><i class="bi bi-pencil"></i></a>
+										</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				{% else %}
+					<div class="p-4 text-center text-muted">
+						<i class="bi bi-ticket-perforated fs-1 d-block mb-2 text-secondary opacity-50"></i>
+						No hay tickets registrados actualmente.
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+	// 1. Gráfica de tickets de los últimos 30 días
+	var ctx30 = document.getElementById('tickets30DaysChart');
+	if (ctx30) {
+		var ctx30Context = ctx30.getContext('2d');
+		var gradient30 = ctx30Context.createLinearGradient(0, 0, 0, 260);
+		gradient30.addColorStop(0, 'rgba(50, 31, 219, 0.35)');
+		gradient30.addColorStop(1, 'rgba(50, 31, 219, 0.0)');
+
+		new Chart(ctx30Context, {
+			type: 'line',
+			data: {
+				labels: {{ chart_days.labels|json_encode|raw }},
+				datasets: [{
+					label: 'Tickets Creados',
+					data: {{ chart_days.data|json_encode|raw }},
+					backgroundColor: gradient30,
+					borderColor: '#321fdb',
+					borderWidth: 2.5,
+					pointBackgroundColor: '#321fdb',
+					pointBorderColor: '#fff',
+					pointHoverBackgroundColor: '#fff',
+					pointHoverBorderColor: '#321fdb',
+					pointRadius: 3,
+					pointHoverRadius: 6,
+					fill: true,
+					tension: 0.35
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: {
+					legend: { display: false },
+					tooltip: {
+						backgroundColor: '#1e1e2f',
+						titleColor: '#fff',
+						bodyColor: '#fff',
+						borderColor: '#321fdb',
+						borderWidth: 1,
+						padding: 10,
+						callbacks: {
+							label: function(context) {
+								return ' ' + context.parsed.y + (context.parsed.y === 1 ? ' ticket' : ' tickets');
+							}
+						}
+					}
+				},
+				scales: {
+					x: {
+						grid: { display: false },
+						ticks: {
+							color: '#8a93a2',
+							maxRotation: 45,
+							autoSkip: true,
+							maxTicksLimit: 15
+						}
+					},
+					y: {
+						beginAtZero: true,
+						grid: {
+							color: 'rgba(138, 147, 162, 0.1)',
+							borderDash: [4, 4]
+						},
+						ticks: {
+							color: '#8a93a2',
+							precision: 0
+						}
+					}
+				}
+			}
+		});
+	}
+
+	// 2. Gráfica de tickets por estado (Doughnut)
+	var ctxStatus = document.getElementById('ticketsByStatusChart');
+	if (ctxStatus) {
+		new Chart(ctxStatus.getContext('2d'), {
+			type: 'doughnut',
+			data: {
+				labels: {{ chart_status.labels|json_encode|raw }},
+				datasets: [{
+					data: {{ chart_status.data|json_encode|raw }},
+					backgroundColor: {{ chart_status.colors|json_encode|raw }},
+					hoverOffset: 4,
+					borderWidth: 2,
+					borderColor: '#ffffff'
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: {
+					legend: {
+						position: 'bottom',
+						labels: {
+							boxWidth: 14,
+							padding: 15,
+							color: '#4f5d73'
+						}
+					},
+					tooltip: {
+						callbacks: {
+							label: function(context) {
+								var label = context.label || '';
+								var value = context.parsed || 0;
+								return ' ' + label + ': ' + value + (value === 1 ? ' ticket' : ' tickets');
+							}
+						}
+					}
+				},
+				cutout: '65%'
+			}
+		});
+	}
+
+	// 3. Gráfica de tickets por categoría (Bar)
+	var ctxCat = document.getElementById('ticketsByCategoryChart');
+	if (ctxCat) {
+		new Chart(ctxCat.getContext('2d'), {
+			type: 'bar',
+			data: {
+				labels: {{ chart_category.labels|json_encode|raw }},
+				datasets: [{
+					label: 'Tickets',
+					data: {{ chart_category.data|json_encode|raw }},
+					backgroundColor: {{ chart_category.colors|json_encode|raw }},
+					borderRadius: 5,
+					maxBarThickness: 35
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: {
+					legend: { display: false },
+					tooltip: {
+						callbacks: {
+							label: function(context) {
+								return ' ' + context.parsed.y + (context.parsed.y === 1 ? ' ticket' : ' tickets');
+							}
+						}
+					}
+				},
+				scales: {
+					x: {
+						grid: { display: false },
+						ticks: {
+							color: '#8a93a2',
+							maxRotation: 30,
+							autoSkip: false
+						}
+					},
+					y: {
+						beginAtZero: true,
+						grid: {
+							color: 'rgba(138, 147, 162, 0.1)',
+							borderDash: [4, 4]
+						},
+						ticks: {
+							color: '#8a93a2',
+							precision: 0
+						}
+					}
+				}
+			}
+		});
+	}
+});
+</script>
+{% endblock %}

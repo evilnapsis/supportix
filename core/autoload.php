@@ -1,24 +1,30 @@
 <?php
 
+require_once __DIR__ . "/../vendor/autoload.php";
+
 include "controller/Core.php";
-include "controller/View.php";
-//include "controller/Module.php"; // Renamed to Layout
 include "controller/Database.php";
 include "controller/Executor.php";
+//# include "controller/Session.php"; [remplazada]
+
+// Actualizacion 2026 : Migracion a Twig + FastRoute (LegoBox)
+include "controller/Req.php";
+include "controller/Response.php";
+include "controller/LbModel.php";
+include "controller/ViewEngine.php";
 
 // 10 octubre 2014
-include "controller/Lb.php";
 include "controller/Model.php";
-include "controller/Bootload.php";
-include "controller/Action.php";
 
+// 13 octubre 2014
+include "controller/Request.php";
+
+
+// Atualizacion 2026, creado 14 octubre 2014
+include "controller/Session.php";
+
+// Actualizacion creado 2026, creado 26 diciembre 2014
 include "controller/class.upload.php";
 
-// 6 Agosto 2022
-include "controller/Extra.php";
-include "controller/Layout.php";
-// 8 Agosto 2022
-include "controller/FormTool.php";
-include "controller/TableTool.php";
 
 ?>

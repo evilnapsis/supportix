@@ -1,0 +1,76 @@
+{% extends "layouts/main.html.twig" %}
+{% block title %}Proyectos{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+	<div>
+		<h2 class="fw-bold mb-1"><i class="bi bi-folder me-2 text-primary"></i>Proyectos</h2>
+		<p class="text-muted mb-0 small">Administración y monitoreo de proyectos y sus tickets asociados</p>
+	</div>
+	<a href="{{ base_url }}/project/new" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i> Nuevo Proyecto</a>
+</div>
+
+{% if projects|length > 0 %}
+	<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mb-4">
+		{% for p in projects %}
+			{% set total_tkts = p.countTickets() %}
+			{% set pending_tkts = p.countPendingTickets() %}
+			<div class="col">
+				<div class="card shadow-sm border-0 h-100 rounded-3 card-hover" style="border-top: 4px solid #321fdb !important;">
+					<div class="card-body p-4 d-flex flex-column">
+						<div class="d-flex justify-content-between align-items-start mb-3">
+							<div class="d-flex align-items-center">
+								<div class="avatar avatar-md bg-primary-subtle text-primary rounded-3 d-flex align-items-center justify-content-center me-3" style="width: 44px; height: 44px; background-color: #ebedfa;">
+									<i class="bi bi-folder-fill fs-4 text-primary"></i>
+								</div>
+								<div>
+									<h5 class="card-title fw-bold mb-0 text-dark">{{ p.name }}</h5>
+									<span class="badge bg-light text-muted border">ID #{{ p.id }}</span>
+								</div>
+							</div>
+						</div>
+
+						<p class="card-text text-muted small flex-grow-1 mb-4" style="min-height: 48px;">
+							{{ p.description ? p.description : '<em class="text-secondary opacity-75">Sin descripción proporcionada.</em>'|raw }}
+						</p>
+
+						<div class="d-flex align-items-center justify-content-between pt-3 border-top mb-3">
+							<div class="d-flex gap-2">
+								<span class="badge bg-primary text-white py-2 px-3 fw-semibold" title="Total de tickets en este proyecto">
+									<i class="bi bi-ticket-perforated me-1"></i> {{ total_tkts }} {{ total_tkts == 1 ? 'ticket' : 'tickets' }}
+								</span>
+								<span class="badge {{ pending_tkts > 0 ? 'bg-warning text-dark' : 'bg-success text-white' }} py-2 px-3 fw-semibold" title="Tickets pendientes de resolver">
+									<i class="bi bi-clock-history me-1"></i> {{ pending_tkts }} {{ pending_tkts == 1 ? 'pendiente' : 'pendientes' }}
+								</span>
+							</div>
+						</div>
+
+						<div class="d-flex justify-content-between align-items-center gap-2">
+							<a href="{{ base_url }}/project/{{ p.id }}/tickets" class="btn btn-outline-primary btn-sm fw-semibold flex-grow-1">
+								<i class="bi bi-list-task me-1"></i> Ver Tickets
+							</a>
+							<a href="{{ base_url }}/project/{{ p.id }}/edit" class="btn btn-outline-warning btn-sm" title="Editar proyecto">
+								<i class="bi bi-pencil"></i>
+							</a>
+							<form method="post" action="{{ base_url }}/project/{{ p.id }}/delete" class="d-inline" onsubmit="return confirm('¿Estás seguro de eliminar este proyecto y todos sus registros asociados?');">
+								{{ csrf_field() }}
+								<button type="submit" class="btn btn-outline-danger btn-sm" title="Eliminar proyecto">
+									<i class="bi bi-trash"></i>
+								</button>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		{% endfor %}
+	</div>
+{% else %}
+	<div class="card shadow-sm border-0">
+		<div class="card-body p-5 text-center text-muted">
+			<i class="bi bi-folder-x fs-1 d-block mb-3 text-secondary opacity-50"></i>
+			<h5 class="fw-bold">No hay proyectos registrados</h5>
+			<p class="small text-muted mb-3">Comienza creando tu primer proyecto para organizar los tickets de soporte.</p>
+			<a href="{{ base_url }}/project/new" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i> Crear Proyecto</a>
+		</div>
+	</div>
+{% endif %}
+{% endblock %}

@@ -1,56 +1,90 @@
 <?php
+/**
+ * Modelo para la entidad Project en Supportix.
+ */
 class ProjectData {
 	public static $tablename = "project";
 
 	public $id;
 	public $name;
 	public $description;
-	public $created_at;
 
 	public function __construct(){
 		$this->name = "";
-		$this->created_at = "NOW()";
+		$this->description = "";
+	}
+
+	private static function db(): \PDO {
+		return Database::getPdo();
 	}
 
 	public function add(){
-		$sql = "insert into ".self::$tablename." (name) ";
-		$sql .= "value (\"$this->name\")";
-		Executor::doit($sql);
+		$stmt = self::db()->prepare("INSERT INTO ".self::$tablename." (name, description) VALUES (:name, :description)");
+		$stmt->execute([
+			'name'        => $this->name,
+			'description' => $this->description,
+		]);
+		$this->id = (int)self::db()->lastInsertId();
 	}
 
 	public static function delById($id){
-		$sql = "delete from ".self::$tablename." where id=$id";
-		Executor::doit($sql);
+		$stmt = self::db()->prepare("DELETE FROM ".self::$tablename." WHERE id = :id");
+		$stmt->execute(['id' => $id]);
 	}
+
 	public function del(){
-		$sql = "delete from ".self::$tablename." where id=$this->id";
-		Executor::doit($sql);
+		self::delById($this->id);
 	}
 
 	public function update(){
-		$sql = "update ".self::$tablename." set name=\"$this->name\" where id=$this->id";
-		Executor::doit($sql);
+		$stmt = self::db()->prepare("UPDATE ".self::$tablename." SET name = :name, description = :description WHERE id = :id");
+		$stmt->execute([
+			'name'        => $this->name,
+			'description' => $this->description,
+			'id'          => $this->id,
+		]);
 	}
 
 	public static function getById($id){
-		$sql = "select * from ".self::$tablename." where id=$id";
-		$query = Executor::doit($sql);
-		return Model::one($query[0],new ProjectData());
+		$stmt = self::db()->prepare("SELECT * FROM ".self::$tablename." WHERE id = :id");
+		$stmt->execute(['id' => $id]);
+		$stmt->setFetchMode(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, self::class);
+		return $stmt->fetch() ?: null;
 	}
 
 	public static function getAll(){
-		$sql = "select * from ".self::$tablename;
-		$query = Executor::doit($sql);
-		return Model::many($query[0],new ProjectData());
+		$stmt = self::db()->query("SELECT * FROM ".self::$tablename." ORDER BY name ASC");
+		return $stmt->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, self::class);
 	}
 
 	public static function getLike($q){
-		$sql = "select * from ".self::$tablename." where name like '%$q%'";
-		$query = Executor::doit($sql);
-		return Model::many($query[0],new ProjectData());
+		$stmt = self::db()->prepare("SELECT * FROM ".self::$tablename." WHERE name LIKE :q");
+		$stmt->execute(['q' => '%'.$q.'%']);
+		return $stmt->fetchAll(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, self::class);
 	}
 
+	public function __get($prop) {
+		if ($prop === 'tickets_count') {
+			return $this->countTickets();
+		}
+		if ($prop === 'pending_tickets_count') {
+			return $this->countPendingTickets();
+		}
+		return null;
+	}
 
+	public function countTickets(): int {
+		$stmt = self::db()->prepare("SELECT COUNT(*) AS total FROM ticket WHERE project_id = :id");
+		$stmt->execute(['id' => $this->id]);
+		$res = $stmt->fetch(\PDO::FETCH_ASSOC);
+		return (int)($res['total'] ?? 0);
+	}
+
+	public function countPendingTickets(): int {
+		$stmt = self::db()->prepare("SELECT COUNT(*) AS total FROM ticket WHERE project_id = :id AND status_id = 1");
+		$stmt->execute(['id' => $this->id]);
+		$res = $stmt->fetch(\PDO::FETCH_ASSOC);
+		return (int)($res['total'] ?? 0);
+	}
 }
 
-?>

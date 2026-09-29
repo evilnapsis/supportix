@@ -1,0 +1,392 @@
+{% extends "layouts/main.html.twig" %}
+{% block title %}Reporte de Tickets{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+	<div>
+		<h2 class="fw-bold mb-1"><i class="bi bi-bar-chart me-2 text-primary"></i>Reportes de Tickets</h2>
+		<p class="text-muted mb-0 small">Métricas, distribución analítica y filtrado avanzado de tickets</p>
+	</div>
+</div>
+
+<!-- Tarjetas de Conteo por Estado en el Reporte -->
+<div class="row g-3 mb-4">
+	{% for sc in status_counts %}
+		{% set border_color = '#6c757d' %}
+		{% set text_color = 'text-secondary' %}
+		{% set icon_class = 'bi-check-circle' %}
+
+		{% if sc.id == 1 %}
+			{% set border_color = '#f9b115' %}
+			{% set text_color = 'text-warning' %}
+			{% set icon_class = 'bi-clock-history' %}
+		{% elseif sc.id == 2 %}
+			{% set border_color = '#321fdb' %}
+			{% set text_color = 'text-primary' %}
+			{% set icon_class = 'bi-gear-wide-connected' %}
+		{% elseif sc.id == 3 %}
+			{% set border_color = '#2eb85c' %}
+			{% set text_color = 'text-success' %}
+			{% set icon_class = 'bi-check2-circle' %}
+		{% elseif sc.id == 4 %}
+			{% set border_color = '#e55353' %}
+			{% set text_color = 'text-danger' %}
+			{% set icon_class = 'bi-x-circle' %}
+		{% endif %}
+
+		{% set is_active_status = filters.status_id is defined and filters.status_id == sc.id %}
+
+		<div class="col-6 col-lg-3">
+			<a href="{{ base_url }}/reports?status_id={{ sc.id }}{% if filters.project_id %}&project_id={{ filters.project_id }}{% endif %}{% if filters.category_id %}&category_id={{ filters.category_id }}{% endif %}{% if filters.priority_id %}&priority_id={{ filters.priority_id }}{% endif %}{% if filters.kind_id %}&kind_id={{ filters.kind_id }}{% endif %}{% if filters.start_at %}&start_at={{ filters.start_at }}{% endif %}{% if filters.finish_at %}&finish_at={{ filters.finish_at }}{% endif %}" class="text-decoration-none text-dark">
+				<div class="card shadow-sm border-0 h-100 card-hover {{ is_active_status ? 'shadow ring-2 ring-primary' : '' }}" style="border-left: 4px solid {{ border_color }} !important; {{ is_active_status ? 'background-color: #f8f9ff;' : '' }}">
+					<div class="card-body p-3 d-flex align-items-center justify-content-between">
+						<div>
+							<div class="fs-4 fw-bold {{ text_color }}">{{ sc.total }}</div>
+							<div class="text-uppercase fw-bold text-muted small" style="font-size: 0.75rem;">{{ sc.name }}</div>
+						</div>
+						<div class="{{ text_color }} opacity-50">
+							<i class="bi {{ icon_class }} fs-2"></i>
+						</div>
+					</div>
+				</div>
+			</a>
+		</div>
+	{% endfor %}
+</div>
+
+<!-- Filtros de Reporte -->
+<div class="card shadow-sm border-0 mb-4">
+	<div class="card-header bg-white py-3">
+		<h5 class="card-title mb-0 fw-bold text-primary"><i class="bi bi-funnel me-2"></i>Filtros del Reporte</h5>
+	</div>
+	<div class="card-body">
+		<form method="get" action="{{ base_url }}/reports" class="row g-3">
+			<div class="col-md-3">
+				<label class="form-label fw-semibold">Proyecto</label>
+				<select name="project_id" class="form-select select2">
+					<option value="">-- Todos los Proyectos --</option>
+					{% for p in projects %}
+						<option value="{{ p.id }}" {% if filters.project_id == p.id %}selected{% endif %}>{{ p.name }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="col-md-3">
+				<label class="form-label fw-semibold">Categoría</label>
+				<select name="category_id" class="form-select select2">
+					<option value="">-- Todas las Categorías --</option>
+					{% for c in categories %}
+						<option value="{{ c.id }}" {% if filters.category_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="col-md-3">
+				<label class="form-label fw-semibold">Prioridad</label>
+				<select name="priority_id" class="form-select">
+					<option value="">-- Todas las Prioridades --</option>
+					{% for pr in priorities %}
+						<option value="{{ pr.id }}" {% if filters.priority_id == pr.id %}selected{% endif %}>{{ pr.name }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="col-md-3">
+				<label class="form-label fw-semibold">Estado</label>
+				<select name="status_id" class="form-select">
+					<option value="">-- Todos los Estados --</option>
+					{% for s in statuses %}
+						<option value="{{ s.id }}" {% if filters.status_id == s.id %}selected{% endif %}>{{ s.name }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="col-md-3">
+				<label class="form-label fw-semibold">Tipo</label>
+				<select name="kind_id" class="form-select">
+					<option value="">-- Todos los Tipos --</option>
+					{% for k in kinds %}
+						<option value="{{ k.id }}" {% if filters.kind_id == k.id %}selected{% endif %}>{{ k.name }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="col-md-3">
+				<label class="form-label fw-semibold">Fecha Desde</label>
+				<input type="date" name="start_at" value="{{ filters.start_at|default('') }}" class="form-control">
+			</div>
+			<div class="col-md-3">
+				<label class="form-label fw-semibold">Fecha Hasta</label>
+				<input type="date" name="finish_at" value="{{ filters.finish_at|default('') }}" class="form-control">
+			</div>
+			<div class="col-md-3 d-flex align-items-end gap-2">
+				<button type="submit" class="btn btn-primary w-100"><i class="bi bi-filter me-1"></i> Filtrar</button>
+				{% if filters.project_id or filters.category_id or filters.priority_id or filters.status_id or filters.kind_id or filters.start_at or filters.finish_at %}
+					<a href="{{ base_url }}/reports" class="btn btn-outline-secondary" title="Limpiar Filtros"><i class="bi bi-x-circle"></i></a>
+				{% endif %}
+			</div>
+		</form>
+	</div>
+</div>
+
+<!-- Gráficas del Reporte -->
+<div class="row g-4 mb-4">
+	<!-- Gráfica 1: Tickets por Estado -->
+	<div class="col-lg-4 col-md-6 col-12">
+		<div class="card shadow-sm border-0 h-100">
+			<div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+				<h5 class="card-title mb-0 fw-bold text-primary">
+					<i class="bi bi-pie-chart me-2"></i>Tickets por Estado
+				</h5>
+			</div>
+			<div class="card-body d-flex align-items-center justify-content-center">
+				<div style="position: relative; height: 260px; width: 100%;">
+					<canvas id="reportStatusChart"></canvas>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Gráfica 2: Tickets por Proyecto -->
+	<div class="col-lg-4 col-md-6 col-12">
+		<div class="card shadow-sm border-0 h-100">
+			<div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+				<h5 class="card-title mb-0 fw-bold text-primary">
+					<i class="bi bi-folder me-2"></i>Tickets por Proyecto
+				</h5>
+			</div>
+			<div class="card-body">
+				<div style="position: relative; height: 260px; width: 100%;">
+					<canvas id="reportProjectChart"></canvas>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Gráfica 3: Tickets por Categoría -->
+	<div class="col-lg-4 col-md-12 col-12">
+		<div class="card shadow-sm border-0 h-100">
+			<div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+				<h5 class="card-title mb-0 fw-bold text-primary">
+					<i class="bi bi-tag me-2"></i>Tickets por Categoría
+				</h5>
+			</div>
+			<div class="card-body">
+				<div style="position: relative; height: 260px; width: 100%;">
+					<canvas id="reportCategoryChart"></canvas>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Resultados del Reporte -->
+<div class="card shadow-sm border-0 mb-4">
+	<div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+		<h5 class="card-title mb-0 fw-bold text-primary"><i class="bi bi-table me-2"></i>Resultados del Reporte</h5>
+		<span class="badge bg-primary fs-6">{{ tickets|length }} registros</span>
+	</div>
+	<div class="card-body">
+		{% if tickets|length > 0 %}
+			<div class="table-responsive">
+				<table class="table table-hover align-middle mb-0">
+					<thead class="table-light">
+						<tr>
+							<th>Asunto</th>
+							<th>Proyecto</th>
+							<th>Tipo</th>
+							<th>Categoría</th>
+							<th>Prioridad</th>
+							<th>Estado</th>
+							<th>Fecha Creación</th>
+							<th class="text-end">Acción</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for t in tickets %}
+							{% set prio_badge = 'secondary' %}
+							{% if t.priority_id == 1 %}{% set prio_badge = 'danger' %}
+							{% elseif t.priority_id == 2 %}{% set prio_badge = 'warning text-dark' %}
+							{% elseif t.priority_id == 3 %}{% set prio_badge = 'info text-dark' %}
+							{% endif %}
+
+							{% set status_badge = 'warning text-dark' %}
+							{% if t.status_id == 2 %}{% set status_badge = 'primary' %}
+							{% elseif t.status_id == 3 %}{% set status_badge = 'success' %}
+							{% elseif t.status_id == 4 %}{% set status_badge = 'danger' %}
+							{% endif %}
+
+							<tr>
+								<td class="fw-bold">{{ t.title }}</td>
+								<td>{{ t.project ? t.project.name : '-' }}</td>
+								<td><span class="badge bg-light text-dark border">{{ t.kind ? t.kind.name : 'Ticket' }}</span></td>
+								<td>{{ t.category ? t.category.name : '-' }}</td>
+								<td><span class="badge bg-{{ prio_badge }}">{{ t.priority ? t.priority.name : 'Normal' }}</span></td>
+								<td><span class="badge bg-{{ status_badge }}">{{ t.status ? t.status.name : 'Pendiente' }}</span></td>
+								<td><small class="text-muted">{{ t.created_at }}</small></td>
+								<td class="text-end">
+									<a href="{{ base_url }}/ticket/view?id={{ t.id }}" class="btn btn-outline-primary btn-sm" title="Ver Detalles">
+										<i class="bi bi-eye"></i>
+									</a>
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		{% else %}
+			<div class="alert alert-warning mb-0" role="alert">
+				<i class="bi bi-exclamation-triangle me-2"></i> No se encontraron tickets con los criterios seleccionados.
+			</div>
+		{% endif %}
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+	// 1. Gráfica de tickets por Estado (Doughnut)
+	var ctxStatus = document.getElementById('reportStatusChart');
+	if (ctxStatus) {
+		new Chart(ctxStatus.getContext('2d'), {
+			type: 'doughnut',
+			data: {
+				labels: {{ chart_status.labels|json_encode|raw }},
+				datasets: [{
+					data: {{ chart_status.data|json_encode|raw }},
+					backgroundColor: {{ chart_status.colors|json_encode|raw }},
+					borderWidth: 2,
+					borderColor: '#ffffff',
+					hoverOffset: 4
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: {
+					legend: {
+						position: 'bottom',
+						labels: {
+							boxWidth: 14,
+							padding: 12,
+							color: '#4f5d73'
+						}
+					},
+					tooltip: {
+						callbacks: {
+							label: function(context) {
+								var label = context.label || '';
+								var value = context.parsed || 0;
+								return ' ' + label + ': ' + value + (value === 1 ? ' ticket' : ' tickets');
+							}
+						}
+					}
+				},
+				cutout: '65%'
+			}
+		});
+	}
+
+	// 2. Gráfica de tickets por Proyecto (Bar)
+	var ctxProject = document.getElementById('reportProjectChart');
+	if (ctxProject) {
+		new Chart(ctxProject.getContext('2d'), {
+			type: 'bar',
+			data: {
+				labels: {{ chart_project.labels|json_encode|raw }},
+				datasets: [{
+					label: 'Tickets',
+					data: {{ chart_project.data|json_encode|raw }},
+					backgroundColor: {{ chart_project.colors|json_encode|raw }},
+					borderRadius: 5,
+					maxBarThickness: 35
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: {
+					legend: { display: false },
+					tooltip: {
+						callbacks: {
+							label: function(context) {
+								return ' ' + context.parsed.y + (context.parsed.y === 1 ? ' ticket' : ' tickets');
+							}
+						}
+					}
+				},
+				scales: {
+					x: {
+						grid: { display: false },
+						ticks: {
+							color: '#8a93a2',
+							maxRotation: 30,
+							autoSkip: false
+						}
+					},
+					y: {
+						beginAtZero: true,
+						grid: {
+							color: 'rgba(138, 147, 162, 0.1)',
+							borderDash: [4, 4]
+						},
+						ticks: {
+							color: '#8a93a2',
+							precision: 0
+						}
+					}
+				}
+			}
+		});
+	}
+
+	// 3. Gráfica de tickets por Categoría (Bar)
+	var ctxCategory = document.getElementById('reportCategoryChart');
+	if (ctxCategory) {
+		new Chart(ctxCategory.getContext('2d'), {
+			type: 'bar',
+			data: {
+				labels: {{ chart_category.labels|json_encode|raw }},
+				datasets: [{
+					label: 'Tickets',
+					data: {{ chart_category.data|json_encode|raw }},
+					backgroundColor: {{ chart_category.colors|json_encode|raw }},
+					borderRadius: 5,
+					maxBarThickness: 35
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: {
+					legend: { display: false },
+					tooltip: {
+						callbacks: {
+							label: function(context) {
+								return ' ' + context.parsed.y + (context.parsed.y === 1 ? ' ticket' : ' tickets');
+							}
+						}
+					}
+				},
+				scales: {
+					x: {
+						grid: { display: false },
+						ticks: {
+							color: '#8a93a2',
+							maxRotation: 30,
+							autoSkip: false
+						}
+					},
+					y: {
+						beginAtZero: true,
+						grid: {
+							color: 'rgba(138, 147, 162, 0.1)',
+							borderDash: [4, 4]
+						},
+						ticks: {
+							color: '#8a93a2',
+							precision: 0
+						}
+					}
+				}
+			}
+		});
+	}
+});
+</script>
+{% endblock %}
